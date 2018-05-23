@@ -1,0 +1,29 @@
+{
+  "name": "react-mde",
+  "version": "1.0.0",
+  "description": "A simple editor for markdown",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "parcel index.html"
+  },
+  "keywords": [
+    "editor",
+    "Markdown",
+    "md",
+    "simple"
+  ],
+  "author": "Charlie",
+  "license": "MIT",
+  "dependencies": {
+    "markdown-it": "^8.4.1",
+    "react": "^16.3.2",
+    "react-dom": "^16.3.2",
+    "react-markdown": "^3.3.2"
+  },
+  "devDependencies": {
+    "babel-preset-env": "^1.7.0",
+    "babel-preset-react": "^6.24.1",
+    "parcel-bundler": "^1.8.1"
+  }
+}

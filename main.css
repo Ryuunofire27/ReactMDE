@@ -1,0 +1,39 @@
+*{
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+#mde{
+  width: 50%;
+  margin: auto;
+  border: 1px black solid;
+  height: 640px;
+}
+#toolbar{
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  padding: 10px;
+  border-bottom: 1px solid black;
+  width: 100%;
+  height: 10%;
+}
+
+#toolbar > i{
+  cursor: pointer;
+  padding: 5px;
+  border: 1px solid black;
+}
+
+.editor-area{
+  padding: 20px;
+  height: 90%;
+  width: 100%;
+  resize: none;
+  border: none;
+}
+
+.show-area{
+  resize: none;
+  width: 100%;
+}
