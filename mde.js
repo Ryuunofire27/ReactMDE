@@ -1,58 +1,60 @@
 import React, { Component } from 'react';
-import ReactMarkdown from 'react-markdown';
-import MD from 'markdown-it';
-const md = MD({
-  html: false,
+import ReactMarkable from 'react-remarkable';
+
+const options = {
+  html: true,
   xhtmlOut: true,
-  breaks: true,
-});
+  breaks: false,
+};
 
 class MDE extends Component{
-  constructor(){
-    super();
+  constructor(props){
+    super(props);
 
     this.state = {
       selectStart: 0,
       selectEnd: 0,
       textarea: null,
-      startLines: [],
-      showValue: 'hola como **estais** \n\n\n\nhadsad',
-      resultarea: null,
-      result: ''
+      showValue: '',
+      listOl: null,
+      listUl: null
     };
 
     this.onChange = this.onChange.bind(this);
     this.onSelect = this.onSelect.bind(this);
-    this.changeValue = this.changeValue.bind(this);
+    this.handleHeader = this.handleHeader.bind(this);
     this.handleToolbar = this.handleToolbar.bind(this);
-    this.onKeyDown = this.onKeyDown.bind(this);
     this.handleInline = this.handleInline.bind(this);
-    //this.agregarStartLines = this.agregarStartLines.bind(this);
+    this.handleList = this.handleList.bind(this);
+    this.onKeyDown = this.onKeyDown.bind(this);
   }
 
   componentDidMount(){
-    this.setState({textarea: this.refs.textarea, resultarea: this.refs.resultarea});
+    this.setState({textarea: this.refs.textarea, listOl: this.refs.listol, listUl: this.refs.listul});
   }
 
   handleToolbar(e){
     switch(e.target.classList[1]){
       case 'fa-bold': this.handleInline("**"); break;
       case 'fa-italic': this.handleInline("_"); break;
-      case 'fa-strikethrough': break;
-      case 'fa-underline': break;
-      case 'fa-header': this.changeValue('#'); break;
-      case 'fa-list-ol': break;
-      case 'fa-list-ul': break;
+      case 'fa-header': this.handleHeader(); break;
+      case 'fa-list-ol': this.handleList(1); break;
+      case 'fa-list-ul': this.handleList(2); break;
+      case 'fa-link': break;
+      case 'fa-file-image-o': break;
     }
     this.onChange();
   }
 
   onChange(e){
     this.setState({
-      showValue: this.state.textarea.value.replace(/\n/g, "\n\n<br>"),
-      result: md.render(this.state.textarea.value.replace(/\n/g, "\n"))
+      showValue: this.state.textarea.value
+        .replace(/-ol.-/g, "1. ")
+        .replace(/-ul.-/g, "- ")
+        .replace(/\n\n/g,"\n\n<br/>\n\n")
+        .replace(/\n/g, "\n\n")
+        .replace(/\n\n\n\n<br\/>\n\n\n\n/g, "\n\n<br/>\n\n")
     });
-    console.log({value: this.state.showValue});
   }
 
   handleInline(mark){
@@ -75,105 +77,93 @@ class MDE extends Component{
     }
   }
 
-  changeValue(strAgregado){
+  handleHeader(){
     const ta = this.state.textarea;
     const value = ta.value;
     const start = this.state.selectStart;
     const end = this.state.selectEnd;
-    //console.log({value});
     let sub1 = value.substring(0, end);
     let sub2 = value.substring(end);
     const index = sub1.lastIndexOf("\n") != -1 ? sub1.lastIndexOf("\n") + 1 : 0;
     sub1 = value.substring(0, index);
     sub2 = value.substring(index);
-    if(sub2.search("######") != -1){
-      sub2 = sub2.substring(7);
-    }else if(sub2.search("#") != -1){
-      sub2 = '#' + sub2;
-    }else{
-      sub2 = '# ' + sub2;
-    }
-    console.log({value: (sub1 + sub2).replace(/\n/g, "\n<br>\n\n") })
+    sub2 = (sub2.search("######") != -1 ? sub2.substring(7) : (sub2.search("#") != -1 ? '#' + sub2 : '# ' + sub2));
     ta.value = sub1 + sub2;
   }
 
-  onSelect(e){
-    const value = e.target.value;
-    const start = e.target.selectionStart;
-    const end = e.target.selectionEnd;
-    this.setState({
-      selectStart: start,
-      selectEnd: end
-    });
-    const time = setInterval(()=>{
-      console.log(end)
-      clearTimeout(time);
-    }, 0.5);
-    time;
-  }
-
-  onKeyDown(e){
-
-  }
-
-  /*onKeyDown(e){
+  handleList(type){
     const ta = this.state.textarea;
     const value = ta.value;
-    const start = e.target.selectionStart;
-    const end = e.target.selectionEnd;
     let sub1 = '';
     let sub2 = '';
     let sub3 = '';
-    if(e.key === 'Enter' || e.keyCode === 13){
-      sub1 = value.substring(0, end);
-      sub2 = value.substring(end);
-      if(sub1.substring(end-1, end).search("\n") != -1){
-        sub1 = value.substring(0,end-1);
-      }
-      ta.value = sub1 + sub2;
-      let found = false;
-      this.state.startLines.map((s) => s == this.state.selectEnd || s == this.state.selectEnd - 1 ? found = true : found = false);
-      if(!found){
-        this.state.startLines.push(this.state.selectEnd);
-      }
-      //console.log(this.state.startLines)
-    }else if(e.key === 'Backspace' || e.keyCode === 8){
-      if(this.state.startLines.indexOf(this.state.selectEnd) != -1){
-        this.state.startLines.pop(this.state.selectEnd);
-      }
-    }else if((e.key >= "a" && e.key <= "z") || (e.key >= "0" && e.key <= "9")){
-      this.agregarStartLines(this.state.selectEnd);
-    }
-  }*/
+    const className = "pressed";
+    const el = type === 1 ? this.state.listOl : this.state.listUl;
+    if(el.classList.contains(className)){
+      el.classList.remove(className);
+    }else{
+      el.classList.add(className);
+      if(el === this.state.listOl){
+        this.state.listUl.classList.remove(className);
+      }else{
+        this.state.listOl.classList.remove(className);
+      }      
+    } 
+  }
 
-  /*agregarStartLines(posicion, aumento = 1){
-    console.log(this.state.selectEnd)
+  onSelect(e){
     this.setState({
-      startLines: this.state.startLines.map((v) => v > posicion - 1 ? v + aumento : v)
+      selectStart: e.target.selectionStart,
+      selectEnd: e.target.selectionEnd
     });
-    const time = setInterval(()=>{
-      console.log(this.state.startLines);
-      clearTimeout(time);
-    }, 0.5);
-    time;
-  }*/
+  }
+
+  onKeyDown(e){
+    if(e.key === "Enter"){
+      const el = this.state.listOl.classList.contains("pressed") ? this.state.listOl : this.state.listUl.classList.contains("pressed") ? this.state.listUl : undefined;
+      if(el){
+        e.preventDefault();
+        const end = this.state.selectEnd;
+        const ta = this.state.textarea;
+        const val = ta.value;
+        let add = el === this.state.listOl ? "-ol.- " : "-ul.- ";
+        let spaces = 7;
+        let sub1 = val.substring(0, end);
+        let sub2 = val.substring(end);
+        if(sub1.search("\n-ol.- ") != -1){
+          add = "  " + add;
+          spaces += 2;
+        }
+        ta.value = sub1 + "\n" + add + sub2;
+        ta.selectionEnd = end + spaces;
+      }
+    }
+    if(e.key === "Tab"){
+      e.preventDefault();
+      const end = this.state.selectEnd;
+      const ta = this.state.textarea;
+      const val = ta.value;
+      let sub1 = val.substring(0, end);
+      let sub2 = val.substring(end);
+      ta.value = sub1 + "  " + sub2;
+    }
+  }
 
   render(){
-    //<ReactMarkdown source={this.state.showValue} escapeHtml={false}/>
     return (
       <div id="mde">
         <div id="toolbar" onClick={this.handleToolbar}>
           <i className="fa fa-bold" aria-hidden="true"></i>
           <i className="fa fa-italic" aria-hidden="true"></i>
           <i className="fa fa-header" aria-hidden="true"></i>
-          <i className="fa fa-list-ol" aria-hidden="true"></i>
-          <i className="fa fa-list-ul" aria-hidden="true"></i>
+          <i className="fa fa-list-ol" aria-hidden="true" ref="listol"></i>
+          <i className="fa fa-list-ul" aria-hidden="true" ref="listul"></i>
           <i className="fa fa-link" aria-hidden="true"></i>
           <i className="fa fa-file-image-o" aria-hidden="true"></i>
         </div>
-        <textarea className="editor-area" autoFocus onChange={this.onChange} onSelect={this.onSelect} onKeyDown={this.onKeyDown} ref="textarea"/>
-        <div ref="resultarea">
-          {this.state.result}
+        <textarea className="editor-area" autoFocus onChange={this.onChange} onSelect={this.onSelect} onKeyDown = {this.onKeyDown} ref="textarea"/>
+        <div className="show-container" ref="showcontainer">
+          <ReactMarkable source={this.state.showValue} options={options}/>
         </div>
       </div>
     );
