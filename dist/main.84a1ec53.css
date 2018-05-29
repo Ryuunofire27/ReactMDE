@@ -37,3 +37,7 @@
   resize: none;
   width: 100%;
 }
+
+.pressed{
+  background-color:  grey;
+}

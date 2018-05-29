@@ -94,9 +94,6 @@ class MDE extends Component{
   handleList(type){
     const ta = this.state.textarea;
     const value = ta.value;
-    let sub1 = '';
-    let sub2 = '';
-    let sub3 = '';
     const className = "pressed";
     const el = type === 1 ? this.state.listOl : this.state.listUl;
     if(el.classList.contains(className)){
@@ -127,12 +124,20 @@ class MDE extends Component{
         const ta = this.state.textarea;
         const val = ta.value;
         let add = el === this.state.listOl ? "-ol.- " : "-ul.- ";
-        let spaces = 7;
+        const normalSpaces = 6;
+        let spaces = add.length + 1;
         let sub1 = val.substring(0, end);
         let sub2 = val.substring(end);
-        if(sub1.search("\n-ol.- ") != -1){
-          add = "  " + add;
-          spaces += 2;
+        const subBreak1 = sub1.substring(sub1.substring(0, sub1.lastIndexOf("\n")).lastIndexOf("\n"), sub1.lastIndexOf("\n") + 1);
+        const subBreak2 = sub1.substring(sub1.lastIndexOf("\n") + 1);
+        if(subBreak2.indexOf("    ") != -1){
+          const break2Arr = subBreak2.split(subBreak2.search("-ol.- ") != -1 ? "-ol.- " : "-ul.- ");
+          add = break2Arr[0] + add;
+          spaces += break2Arr[0].length;
+        }
+        if((subBreak2.search("-ol.- ") != -1 || subBreak2.search("-ul.- ") != -1) && subBreak2.search(add) == -1){
+          add = "    " + add;
+          spaces += 4;
         }
         ta.value = sub1 + "\n" + add + sub2;
         ta.selectionEnd = end + spaces;
